@@ -1,0 +1,22 @@
+[package]
+name = "tracing_dynamic"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Utilities tracing with dynamic fields"
+homepage="https://github.com/BrynCooke/tracing-dynamic"
+repository="https://github.com/BrynCooke/tracing-dynamic"
+keywords = ["derive", "macro", "serde", "default"]
+
+
+
+
+
+[dependencies]
+tracing = "0.1"
+tracing-core = "0.1"
+
+
+[dev-dependencies]
+tracing-subscriber = {version = "0.3", features = ["fmt", "json", "registry"]}
+
