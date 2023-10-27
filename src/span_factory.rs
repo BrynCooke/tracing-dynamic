@@ -100,13 +100,8 @@ impl LateCallsite {
 #[cfg(test)]
 mod test {
     use crate::span_factory::SpanFactory;
-    
-    
-    
     use std::sync::{Arc, Mutex};
     use tracing_core::Level;
-    
-
     #[derive(Clone, Default)]
     struct TestWriter {
         buffer: Arc<Mutex<Vec<u8>>>,
@@ -163,6 +158,7 @@ mod test {
         });
 
         insta::assert_snapshot!(
+            subscriber_level.to_string(),
             String::from_utf8(test_writer.buffer.lock().unwrap().to_vec()).unwrap()
         );
     }

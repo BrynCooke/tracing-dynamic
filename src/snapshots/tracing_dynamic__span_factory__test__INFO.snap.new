@@ -1,0 +1,7 @@
+---
+source: src/span_factory.rs
+assertion_line: 160
+expression: "String::from_utf8(test_writer.buffer.lock().unwrap().to_vec()).unwrap()"
+---
+{"level":"ERROR","fields":{"message":"Hello world"},"target":"tracing_dynamic::span_factory::test","span":{"dyn_attr_1":"dyn_attr_1","dyn_attr_2":"dyn_attr_2","name":"span_name"},"spans":[{"dyn_attr_1":"dyn_attr_1","dyn_attr_2":"dyn_attr_2","name":"span_name"}]}
+
