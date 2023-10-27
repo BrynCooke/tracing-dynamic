@@ -12,6 +12,10 @@ Things to consider before using this:
 If after reading the above you want to try it, here's how you can use it:
 
 
+```toml
+tracing_dynamic = "0.2.0"
+```
+
 ```rust
   let attrs = vec!["dyn_attr_1", "dyn_attr_2"];
   let span_factory = SpanFactory::new("span_name", "span_target", tracing::Level::INFO, None, None, None, &attrs);
