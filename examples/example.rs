@@ -8,9 +8,9 @@ fn main() {
     tracing::subscriber::with_default(subscriber, || {
         let span = span_factory.create();
         let _guard = span.enter();
-        span.record("dyn_attr_1", &"dyn_attr_1");
-        span.record("dyn_attr_2", &"dyn_attr_2");
-        span.record("dyn_attr_4", &"dyn_attr_4"); // Not in the original metadata, it'll be ignored.
+        span.record("dyn_attr_1", "dyn_attr_1");
+        span.record("dyn_attr_2", "dyn_attr_2");
+        span.record("dyn_attr_4", "dyn_attr_4"); // Not in the original metadata, it'll be ignored.
         tracing::error!("Hello world");
     });
 }
