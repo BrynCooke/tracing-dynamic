@@ -1,6 +1,6 @@
 # tracing-dynamic
 
->!Read this before using this library!
+> :warning: Read this before using this library :warning:
 
 This is a small library to allow you to create dynamic attributes on spans. 
 
