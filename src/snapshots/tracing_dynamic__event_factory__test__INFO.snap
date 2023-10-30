@@ -1,0 +1,6 @@
+---
+source: src/event_factory.rs
+expression: "String::from_utf8(test_writer.buffer.lock().unwrap().to_vec()).unwrap()"
+---
+{"level":"INFO","fields":{"dyn_attr_1":"dyn_attr_1","dyn_attr_2":"dyn_attr_2"},"target":"event_target"}
+
