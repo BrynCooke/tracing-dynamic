@@ -13,7 +13,7 @@ If after reading the above you want to try it, here's how you can use it:
 
 
 ```toml
-tracing_dynamic = "0.3.0"
+tracing_dynamic = "0.3.1"
 ```
 
 ```rust
