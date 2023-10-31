@@ -7,7 +7,7 @@ This is a small library to allow you to create dynamic attributes on spans and e
 Things to consider before using this:
 * It will leak memory. This happens on each instantiation of SpanFactory or EventFactory. You'll want to create factories sparingly and reuse them.
 * I didn't test it in a real program.
-* It'll be slower thanBump version the tracing macros, but you came here for flexibility right?
+* It'll be slower than the tracing macros, but you came here for flexibility right?
 
 If after reading the above you want to try it, here's how you can use it:
 
@@ -51,7 +51,7 @@ tracing_dynamic = "0.3.0"
     span.record("dyn_attr_2", "dyn_attr_2");
     span.record("dyn_attr_4", "dyn_attr_4"); // Not in the original metadata, it'll be ignored.
     
-    // Create an event with attributes defined at runtime
+    // Create an event with fields defined at runtime
     event_factory
       .create()
       .with("dyn_attr_1", &"dyn_attr_1")
