@@ -5,7 +5,7 @@
 This is a small library to allow you to create dynamic attributes on spans and events. 
 
 Things to consider before using this:
-* It will leak memory. This happens on each instantiation of SpanFactory or EventFactory. You'll want to create span factories sparingly and reuse them.
+* It will leak memory. This happens on each instantiation of SpanFactory or EventFactory. You'll want to create factories sparingly and reuse them.
 * I didn't test it in a real program.
 * It'll be slower thanBump version the tracing macros, but you came here for flexibility right?
 
