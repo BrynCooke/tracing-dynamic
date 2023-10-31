@@ -27,9 +27,11 @@ fn main() {
     let subscriber = tracing_subscriber::fmt().pretty().finish();
     tracing::subscriber::with_default(subscriber, || {
         // Create a span with attributes defined at runtime
-        let span = span_factory.create();
+        let span = span_factory
+            .create()
+            .with("dyn_attr_1", &"dyn_attr_1")
+            .build();
         let _guard = span.enter();
-        span.record("dyn_attr_1", "dyn_attr_1");
         span.record("dyn_attr_2", "dyn_attr_2");
         span.record("dyn_attr_4", "dyn_attr_4"); // Not in the original metadata, it'll be ignored.
 
@@ -39,6 +41,6 @@ fn main() {
             .with("dyn_attr_1", &"dyn_attr_1")
             .with("dyn_attr_2", &"dyn_attr_2")
             .with("dyn_attr_4", &"dyn_attr_4") // Not in the original metadata, it'll be ignored.
-            .finish();
+            .build();
     });
 }

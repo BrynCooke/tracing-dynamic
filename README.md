@@ -5,7 +5,7 @@
 This is a small library to allow you to create dynamic attributes on spans. 
 
 Things to consider before using this:
-* It will leak memory. This happens on each instantiation of SpanFactory. You'll want to create span factories sparingly and reuse them.
+* It will leak memory. This happens on each instantiation of SpanFactory or EventFactory. You'll want to create span factories sparingly and reuse them.
 * I didn't test it in a real program.
 * It'll be slower than the tracing macros, but you came here for flexibility right?
 
@@ -44,9 +44,10 @@ tracing_dynamic = "0.2.0"
   let subscriber = tracing_subscriber::fmt().pretty().finish();
   tracing::subscriber::with_default(subscriber, || {
   // Create a span with attributes defined at runtime
-    let span = span_factory.create();
+    let span = span_factory.create()
+      .with("dyn_attr_1", &"dyn_attr_1") // Field created at span creation time
+      .build();
     let _guard = span.enter();
-    span.record("dyn_attr_1", "dyn_attr_1");
     span.record("dyn_attr_2", "dyn_attr_2");
     span.record("dyn_attr_4", "dyn_attr_4"); // Not in the original metadata, it'll be ignored.
     

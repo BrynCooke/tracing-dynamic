@@ -1,82 +1,13 @@
+use crate::factory::{Builder, Factory};
 use std::collections::BTreeMap;
-use tracing_core::callsite::DefaultCallsite;
-use tracing_core::field::{FieldSet, Value};
-use tracing_core::{Callsite, Field, Interest, Kind, Level, Metadata};
+use tracing_core::field::Value;
+use tracing_core::{Field, Metadata};
 
-/// Event allows creating events with attributes defined at runtime.
+/// Event factory allows creating events with attributes defined at runtime.
 /// It leaks memory to do this, so create event factories once and reuse them.
-pub struct EventFactory {
-    callsite: &'static LateCallsite,
-    fields: &'static BTreeMap<&'static str, Field>,
-}
+pub type EventFactory<'a> = Factory<EventBuilder<'a>>;
 
-impl EventFactory {
-    /// Create a span factory
-    pub fn new(
-        name: &str,
-        target: &str,
-        level: Level,
-        file: Option<&str>,
-        line: Option<u32>,
-        module_path: Option<&str>,
-        fields: &[&str],
-    ) -> Self {
-        // tracing expects everything to be static, so we need to leak everything
-        let name = name.to_string().leak();
-        let target = target.to_string().leak();
-        let file = file.map(|s| s.to_string().leak() as &'static str);
-        let module_path = module_path.map(|s| s.to_string().leak() as &'static str);
-
-        let callsite: &'static mut LateCallsite = Box::leak(Box::default());
-        let fields = Box::leak(Box::new(
-            fields
-                .iter()
-                .map(|k| k.to_string().leak() as &'static str)
-                .collect::<Vec<&'static str>>(),
-        ));
-        let metadata = Box::leak(Box::new(Metadata::new(
-            name,
-            target,
-            level,
-            file,
-            line,
-            module_path,
-            FieldSet::new(fields, tracing_core::identify_callsite!(callsite)),
-            Kind::SPAN,
-        )));
-
-        callsite
-            .delegate
-            .set(DefaultCallsite::new(metadata))
-            .expect("cannot initialize callsite");
-
-        let fields = Box::leak(Box::new(
-            metadata.fields().iter().map(|f| (f.name(), f)).collect(),
-        ));
-        EventFactory { callsite, fields }
-    }
-
-    pub fn create(&self) -> Event {
-        let enabled = ::tracing::Level::INFO <= ::tracing::level_filters::STATIC_MAX_LEVEL
-            && *self.callsite.metadata().level()
-                <= ::tracing::level_filters::LevelFilter::current()
-            && {
-                let interest = self.callsite.interest();
-                !interest.is_never()
-                    && ::tracing::__macro_support::__is_enabled(self.callsite.metadata(), interest)
-            };
-        if enabled {
-            Event::Enabled {
-                metadata: self.callsite.metadata(),
-                values: vec![],
-                fields: self.fields,
-            }
-        } else {
-            Event::Disabled
-        }
-    }
-}
-pub enum Event<'a> {
+pub enum EventBuilder<'a> {
     Enabled {
         metadata: &'static Metadata<'static>,
         fields: &'static BTreeMap<&'static str, Field>,
@@ -85,10 +16,26 @@ pub enum Event<'a> {
     Disabled,
 }
 
-impl<'a> Event<'a> {
+impl Builder for EventBuilder<'_> {
+    fn create_enabled(
+        metadata: &'static Metadata<'static>,
+        fields: &'static BTreeMap<&'static str, Field>,
+    ) -> Self {
+        EventBuilder::Enabled {
+            metadata,
+            fields,
+            values: Vec::new(),
+        }
+    }
+    fn create_disabled(_metadata: &'static Metadata<'static>) -> Self {
+        EventBuilder::Disabled
+    }
+}
+
+impl<'a> EventBuilder<'a> {
     #[inline]
     pub fn with(&mut self, name: &str, value: &'a dyn Value) -> &mut Self {
-        if let Event::Enabled { values, fields, .. } = self {
+        if let EventBuilder::Enabled { values, fields, .. } = self {
             if let Some(field) = fields.get(name) {
                 values.push((field, Some(value)));
             }
@@ -96,8 +43,8 @@ impl<'a> Event<'a> {
         self
     }
     #[inline]
-    pub fn finish(&self) {
-        if let Event::Enabled {
+    pub fn build(&self) {
+        if let EventBuilder::Enabled {
             metadata, values, ..
         } = self
         {
@@ -228,31 +175,6 @@ impl<'a> Event<'a> {
     }
 }
 
-#[derive(Default)]
-struct LateCallsite {
-    delegate: std::sync::OnceLock<DefaultCallsite>,
-}
-
-impl Callsite for LateCallsite {
-    fn set_interest(&self, interest: Interest) {
-        self.delegate.get().unwrap().set_interest(interest);
-    }
-
-    fn metadata(&self) -> &Metadata<'_> {
-        self.delegate.get().unwrap().metadata()
-    }
-}
-
-impl LateCallsite {
-    #[inline]
-    fn interest(&'static self) -> Interest {
-        self.delegate
-            .get()
-            .expect("cannot get delegate callsite, this is a bug")
-            .interest()
-    }
-}
-
 #[cfg(test)]
 mod test {
     use std::sync::{Arc, Mutex};
@@ -311,7 +233,7 @@ mod test {
             event.with("dyn_attr_1", &"dyn_attr_1");
             event.with("dyn_attr_2", &"dyn_attr_2");
             event.with("dyn_attr_4", &"dyn_attr_4");
-            event.finish();
+            event.build();
         });
 
         insta::assert_snapshot!(
